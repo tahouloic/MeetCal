@@ -1,0 +1,309 @@
+<div class="register-container">
+  <div class="register-card">
+    <!-- Logo et titre -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <div class="plus-vertical"></div>
+          <div class="plus-horizontal"></div>
+        </div>
+      </div>
+      <h1 class="title">Créer un Compte</h1>
+      <p class="subtitle">Rejoignez MeetCal</p>
+    </div>
+
+    <!-- Message de succès -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- Sélection du type de compte -->
+    <div *ngIf="!successMessage" class="account-type-selector">
+      <button
+        type="button"
+        class="account-type-btn"
+        [class.active]="accountType === 'INDIVIDUAL'"
+        (click)="switchAccountType('INDIVIDUAL')"
+      >
+        <span class="account-icon">👤</span>
+        <span class="account-label">Particulier</span>
+      </button>
+      <button
+        type="button"
+        class="account-type-btn"
+        [class.active]="accountType === 'BUSINESS'"
+        (click)="switchAccountType('BUSINESS')"
+      >
+        <span class="account-icon">🏢</span>
+        <span class="account-label">Entreprise</span>
+      </button>
+    </div>
+
+    <!-- Formulaire d'inscription -->
+    <div *ngIf="!successMessage" class="form-section">
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        
+        <!-- FORMULAIRE PARTICULIER -->
+        <div *ngIf="accountType === 'INDIVIDUAL'">
+          <!-- Prénom et Nom -->
+          <div class="input-row">
+            <div class="input-group">
+              <label for="firstName" class="label">Prénom *</label>
+              <div class="input-container" [class.error]="firstName?.invalid && firstName?.touched">
+                <input
+                  id="firstName"
+                  type="text"
+                  formControlName="firstName"
+                  placeholder="Votre prénom"
+                  class="input"
+                />
+              </div>
+              <div *ngIf="firstName?.invalid && firstName?.touched" class="error-message">
+                <span *ngIf="firstName?.errors?.['required']">Le prénom est requis</span>
+                <span *ngIf="firstName?.errors?.['minlength']">Minimum 2 caractères</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="lastName" class="label">Nom *</label>
+              <div class="input-container" [class.error]="lastName?.invalid && lastName?.touched">
+                <input
+                  id="lastName"
+                  type="text"
+                  formControlName="lastName"
+                  placeholder="Votre nom"
+                  class="input"
+                />
+              </div>
+              <div *ngIf="lastName?.invalid && lastName?.touched" class="error-message">
+                <span *ngIf="lastName?.errors?.['required']">Le nom est requis</span>
+                <span *ngIf="lastName?.errors?.['minlength']">Minimum 2 caractères</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <label for="email-individual" class="label">Email *</label>
+            <div class="input-container" [class.error]="email?.invalid && email?.touched">
+              <input
+                id="email-individual"
+                type="email"
+                formControlName="email"
+                placeholder="votre.email@example.com"
+                class="input"
+              />
+            </div>
+            <div *ngIf="email?.invalid && email?.touched" class="error-message">
+              <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+              <span *ngIf="email?.errors?.['email']">Format d'email invalide</span>
+            </div>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="input-group">
+            <label for="phone-individual" class="label">Téléphone *</label>
+            <div class="input-container" [class.error]="phone?.invalid && phone?.touched">
+              <input
+                id="phone-individual"
+                type="tel"
+                formControlName="phone"
+                placeholder="+237 6XX XX XX XX"
+                class="input"
+              />
+            </div>
+            <div *ngIf="phone?.invalid && phone?.touched" class="error-message">
+              <span *ngIf="phone?.errors?.['required']">Le téléphone est requis</span>
+            </div>
+          </div>
+
+          <!-- Emploi et Niveau d'études -->
+          <div class="input-row">
+            <div class="input-group">
+              <label for="occupation" class="label">Emploi *</label>
+              <div class="input-container" [class.error]="occupation?.invalid && occupation?.touched">
+                <select
+                  id="occupation"
+                  formControlName="occupation"
+                  class="input select-input"
+                >
+                  <option [value]="null" disabled selected>Sélectionnez</option>
+                  <option *ngFor="let occ of occupations" [value]="occ.value">
+                    {{ occ.label }}
+                  </option>
+                </select>
+              </div>
+              <div *ngIf="occupation?.invalid && occupation?.touched" class="error-message">
+                <span *ngIf="occupation?.errors?.['required']">L'emploi est requis</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="educationLevel" class="label">Niveau d'études *</label>
+              <div class="input-container" [class.error]="educationLevel?.invalid && educationLevel?.touched">
+                <select
+                  id="educationLevel"
+                  formControlName="educationLevel"
+                  class="input select-input"
+                >
+                  <option [value]="null" disabled selected>Sélectionnez</option>
+                  <option *ngFor="let edu of educationLevels" [value]="edu.value">
+                    {{ edu.label }}
+                  </option>
+                </select>
+              </div>
+              <div *ngIf="educationLevel?.invalid && educationLevel?.touched" class="error-message">
+                <span *ngIf="educationLevel?.errors?.['required']">Le niveau d'études est requis</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sexe -->
+          <div class="input-group">
+            <label for="gender" class="label">Sexe *</label>
+            <div class="input-container" [class.error]="gender?.invalid && gender?.touched">
+              <select
+                id="gender"
+                formControlName="gender"
+                class="input select-input"
+              >
+                <option [value]="null" disabled selected>Sélectionnez</option>
+                <option *ngFor="let g of genders" [value]="g.value">
+                  {{ g.label }}
+                </option>
+              </select>
+            </div>
+            <div *ngIf="gender?.invalid && gender?.touched" class="error-message">
+              <span *ngIf="gender?.errors?.['required']">Le sexe est requis</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMULAIRE ENTREPRISE -->
+        <div *ngIf="accountType === 'BUSINESS'">
+          <!-- Nom de l'entreprise -->
+          <div class="input-group">
+            <label for="companyName" class="label">Nom de l'entreprise *</label>
+            <div class="input-container" [class.error]="companyName?.invalid && companyName?.touched">
+              <input
+                id="companyName"
+                type="text"
+                formControlName="companyName"
+                placeholder="Nom de votre entreprise"
+                class="input"
+              />
+            </div>
+            <div *ngIf="companyName?.invalid && companyName?.touched" class="error-message">
+              <span *ngIf="companyName?.errors?.['required']">Le nom de l'entreprise est requis</span>
+              <span *ngIf="companyName?.errors?.['minlength']">Minimum 2 caractères</span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <label for="email-business" class="label">Email *</label>
+            <div class="input-container" [class.error]="email?.invalid && email?.touched">
+              <input
+                id="email-business"
+                type="email"
+                formControlName="email"
+                placeholder="contact@entreprise.com"
+                class="input"
+              />
+            </div>
+            <div *ngIf="email?.invalid && email?.touched" class="error-message">
+              <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+              <span *ngIf="email?.errors?.['email']">Format d'email invalide</span>
+            </div>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="input-group">
+            <label for="phone-business" class="label">Téléphone *</label>
+            <div class="input-container" [class.error]="phone?.invalid && phone?.touched">
+              <input
+                id="phone-business"
+                type="tel"
+                formControlName="phone"
+                placeholder="+237 6XX XX XX XX"
+                class="input"
+              />
+            </div>
+            <div *ngIf="phone?.invalid && phone?.touched" class="error-message">
+              <span *ngIf="phone?.errors?.['required']">Le téléphone est requis</span>
+            </div>
+          </div>
+
+          <!-- Secteur d'activités et Statut juridique -->
+          <div class="input-row">
+            <div class="input-group">
+              <label for="businessSector" class="label">Secteur d'activités *</label>
+              <div class="input-container" [class.error]="businessSector?.invalid && businessSector?.touched">
+                <select
+                  id="businessSector"
+                  formControlName="businessSector"
+                  class="input select-input"
+                >
+                  <option [value]="null" disabled selected>Sélectionnez</option>
+                  <option *ngFor="let sector of businessSectors" [value]="sector.value">
+                    {{ sector.label }}
+                  </option>
+                </select>
+              </div>
+              <div *ngIf="businessSector?.invalid && businessSector?.touched" class="error-message">
+                <span *ngIf="businessSector?.errors?.['required']">Le secteur est requis</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="legalStatus" class="label">Statut juridique *</label>
+              <div class="input-container" [class.error]="legalStatus?.invalid && legalStatus?.touched">
+                <select
+                  id="legalStatus"
+                  formControlName="legalStatus"
+                  class="input select-input"
+                >
+                  <option [value]="null" disabled selected>Sélectionnez</option>
+                  <option *ngFor="let status of legalStatuses" [value]="status.value">
+                    {{ status.label }}
+                  </option>
+                </select>
+              </div>
+              <div *ngIf="legalStatus?.invalid && legalStatus?.touched" class="error-message">
+                <span *ngIf="legalStatus?.errors?.['required']">Le statut juridique est requis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info mot de passe -->
+        <div class="info-box">
+          <span class="info-icon">ℹ️</span>
+          <span>Un mot de passe sera généré automatiquement et envoyé à votre adresse email.</span>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Bouton d'inscription -->
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading || registerForm.invalid"
+        >
+          <span *ngIf="isLoading" class="spinner"></span>
+          <span>{{ isLoading ? 'Inscription en cours...' : 'S\'inscrire' }}</span>
+        </button>
+
+        <!-- Lien vers la connexion -->
+        <div class="footer-link">
+          <p>Vous avez déjà un compte ? <a routerLink="/login" class="link">Se connecter</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

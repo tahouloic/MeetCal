@@ -1,0 +1,298 @@
+<div class="parametres-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Paramètres</h1>
+    <p>Gérez vos préférences et paramètres de sécurité</p>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <div class="tabs-navigation">
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'profil'"
+      (click)="switchTab('profil')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Profil
+    </button>
+    
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'securite'"
+      (click)="switchTab('securite')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Sécurité
+    </button>
+    
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'apparence'"
+      (click)="switchTab('apparence')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+        <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2"/>
+        <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2"/>
+        <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2"/>
+        <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Apparence
+    </button>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="tabs-content">
+    
+    <!-- Onglet Profil -->
+    <div class="tab-panel" *ngIf="activeTab === 'profil'">
+      <div class="settings-section">
+        <h2>Informations du profil</h2>
+        <div class="profile-info">
+          <div class="profile-avatar">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="profile-details">
+            <h3>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h3>
+            <p class="email">{{ currentUser?.email }}</p>
+            <span class="role-badge" [class.admin]="isAdmin">
+              {{ isAdmin ? 'Administrateur' : 'Enseignant' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Sécurité -->
+    <div class="tab-panel" *ngIf="activeTab === 'securite'">
+      <div class="settings-section">
+        <h2>Changer le mot de passe</h2>
+        <p class="section-description">
+          Modifiez votre mot de passe pour sécuriser votre compte
+        </p>
+
+        <!-- Messages -->
+        <div class="alert alert-error" *ngIf="passwordError">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="16" r="1" fill="currentColor"/>
+          </svg>
+          {{ passwordError }}
+        </div>
+
+        <div class="alert alert-success" *ngIf="passwordSuccess">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2"/>
+            <polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          {{ passwordSuccess }}
+          <p class="redirect-message">Vous allez être déconnecté dans quelques secondes...</p>
+        </div>
+
+        <!-- Formulaire de changement de mot de passe -->
+        <form class="password-form" (ngSubmit)="changePassword()" *ngIf="!passwordSuccess">
+          
+          <!-- Mot de passe actuel -->
+          <div class="form-group">
+            <label for="currentPassword">Mot de passe actuel</label>
+            <div class="password-input-wrapper">
+              <input
+                id="currentPassword"
+                [type]="showCurrentPassword ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.currentPassword"
+                name="currentPassword"
+                class="form-control"
+                placeholder="Entrez votre mot de passe actuel"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility('current')">
+                <svg *ngIf="!showCurrentPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <svg *ngIf="showCurrentPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
+                  <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nouveau mot de passe -->
+          <div class="form-group">
+            <label for="newPassword">Nouveau mot de passe</label>
+            <div class="password-input-wrapper">
+              <input
+                id="newPassword"
+                [type]="showNewPassword ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.newPassword"
+                (input)="validatePassword()"
+                name="newPassword"
+                class="form-control"
+                placeholder="Entrez votre nouveau mot de passe"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility('new')">
+                <svg *ngIf="!showNewPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <svg *ngIf="showNewPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
+                  <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Indicateurs de force du mot de passe -->
+            <div class="password-strength" *ngIf="passwordForm.newPassword">
+              <div class="strength-item" [class.valid]="passwordStrength.hasMinLength">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Au moins 8 caractères
+              </div>
+              <div class="strength-item" [class.valid]="passwordStrength.hasUpperCase">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Une lettre majuscule
+              </div>
+              <div class="strength-item" [class.valid]="passwordStrength.hasLowerCase">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Une lettre minuscule
+              </div>
+              <div class="strength-item" [class.valid]="passwordStrength.hasNumber">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Un chiffre
+              </div>
+              <div class="strength-item" [class.valid]="passwordStrength.hasSpecialChar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Un caractère spécial (!@#$%^&*...)
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirmation du mot de passe -->
+          <div class="form-group">
+            <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+            <div class="password-input-wrapper">
+              <input
+                id="confirmPassword"
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.confirmPassword"
+                name="confirmPassword"
+                class="form-control"
+                [class.error]="passwordForm.confirmPassword && !passwordsMatch"
+                placeholder="Confirmez votre nouveau mot de passe"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility('confirm')">
+                <svg *ngIf="!showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <svg *ngIf="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
+                  <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+            <p class="error-message" *ngIf="passwordForm.confirmPassword && !passwordsMatch">
+              Les mots de passe ne correspondent pas
+            </p>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="isChangingPassword || !isPasswordValid || !passwordsMatch || !passwordForm.currentPassword">
+              <span *ngIf="!isChangingPassword">Changer le mot de passe</span>
+              <span *ngIf="isChangingPassword">
+                <div class="spinner-small"></div>
+                Modification en cours...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Onglet Apparence -->
+    <div class="tab-panel" *ngIf="activeTab === 'apparence'">
+      <div class="settings-section">
+        <h2>Thème de l'application</h2>
+        <p class="section-description">
+          Choisissez le thème qui vous convient le mieux
+        </p>
+
+        <div class="theme-selector">
+          <button
+            class="theme-option"
+            [class.active]="!isDarkMode"
+            (click)="toggleTheme()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+              <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2"/>
+              <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2"/>
+              <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2"/>
+              <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Clair</span>
+          </button>
+
+          <button
+            class="theme-option"
+            [class.active]="isDarkMode"
+            (click)="toggleTheme()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Sombre</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Overlay de déconnexion -->
+  <div class="logout-overlay" *ngIf="isLoggingOut">
+    <div class="logout-content">
+      <div class="spinner"></div>
+      <p>Déconnexion en cours...</p>
+    </div>
+  </div>
+</div>

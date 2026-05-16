@@ -1,0 +1,114 @@
+<div class="disponibilites-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Gestion des Disponibilités</h1>
+    <p class="subtitle">
+      @if (isAdmin()) {
+        Visualisez les disponibilités des enseignants
+      } @else {
+        Sélectionnez vos créneaux de disponibilité
+      }
+    </p>
+  </div>
+
+  <!-- Sélecteur d'enseignant (admin uniquement) -->
+  @if (isAdmin()) {
+    <div class="teacher-selector">
+      <label for="teacherSelect">Sélectionner un enseignant :</label>
+      <select 
+        id="teacherSelect"
+        [ngModel]="selectedTeacherId()"
+        (ngModelChange)="selectedTeacherId.set($event); onTeacherChange()"
+        class="teacher-select">
+        <option value="">-- Choisir un enseignant --</option>
+        @for (teacher of teachers(); track teacher.id) {
+          <option [value]="teacher.id">
+            {{ teacher.user?.firstName }} {{ teacher.user?.lastName }} - {{ teacher.specialty }}
+          </option>
+        }
+      </select>
+      
+      @if (selectedTeacherId()) {
+        <div class="selected-teacher-info">
+          <strong>Enseignant sélectionné :</strong> {{ getSelectedTeacherName() }}
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Message de feedback -->
+  @if (message()) {
+    <div class="message" [class.success]="messageType() === 'success'" [class.error]="messageType() === 'error'">
+      {{ message() }}
+    </div>
+  }
+
+  <!-- Calendrier -->
+  <div class="calendar-wrapper">
+    @if (isLoading()) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+      </div>
+    } @else {
+      <div class="calendar">
+        <!-- En-tête avec les jours -->
+        <div class="calendar-header">
+          <div class="time-column header-cell">Heure</div>
+          @for (day of days; track day.value) {
+            <div class="day-column header-cell">{{ day.label }}</div>
+          }
+        </div>
+
+        <!-- Corps du calendrier avec les créneaux horaires -->
+        <div class="calendar-body">
+          @for (hour of hours; track hour) {
+            <div class="time-row">
+              <div class="time-label">{{ hour }}:00</div>
+              @for (day of days; track day.value) {
+                <div 
+                  class="time-slot"
+                  [class.selected]="isSlotSelected(day.value, hour)"
+                  [class.disabled]="isSlotDisabled(hour)"
+                  [class.clickable]="!isAdmin() && !isSlotDisabled(hour)"
+                  (click)="toggleSlot(day.value, hour)">
+                  @if (isSlotSelected(day.value, hour)) {
+                    <span class="checkmark">✓</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Bouton Valider (enseignant uniquement) -->
+      @if (!isAdmin()) {
+        <div class="actions">
+          <button 
+            class="btn btn-primary"
+            (click)="saveAvailabilities()"
+            [disabled]="isSaving()">
+            @if (isSaving()) {
+              <span class="spinner-small"></span>
+              Enregistrement...
+            } @else {
+              Valider les disponibilités
+            }
+          </button>
+          
+          <p class="help-text">
+            Cliquez sur les cases pour sélectionner vos créneaux de disponibilité, puis cliquez sur "Valider" pour enregistrer.
+          </p>
+        </div>
+      }
+
+      <!-- Info pour admin -->
+      @if (isAdmin() && !selectedTeacherId()) {
+        <div class="empty-state">
+          <p>Veuillez sélectionner un enseignant pour voir ses disponibilités.</p>
+        </div>
+      }
+    }
+  </div>
+</div>

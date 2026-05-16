@@ -1,0 +1,297 @@
+@import '../cours/cours.scss';
+
+.etudiants-container {
+  @extend .cours-container;
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.students-table {
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: var(--primary-color);
+      color: white;
+
+      th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.2s;
+
+        &:hover {
+          background: var(--hover-bg);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        padding: 1rem;
+        color: var(--text-primary);
+
+        .matricule {
+          background: var(--primary-color);
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+
+        .school-badge {
+          background: #3498db;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        .actions {
+          display: flex;
+          gap: 0.5rem;
+
+          button {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+
+            &.btn-edit {
+              background: #3498db;
+              color: white;
+
+              &:hover {
+                background: #2980b9;
+              }
+            }
+
+            &.btn-delete {
+              background: #e74c3c;
+              color: white;
+
+              &:hover {
+                background: #c0392b;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.empty-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.info-box {
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+
+  i {
+    color: #1976d2;
+    font-size: 1.5rem;
+  }
+
+  code {
+    background: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+  }
+
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--hover-bg);
+  }
+}
+
+.file-upload {
+  margin: 1.5rem 0;
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--input-bg);
+
+    &:hover {
+      border-color: var(--primary-color);
+      background: var(--hover-bg);
+    }
+
+    i {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    span {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+  }
+}
+
+.import-result {
+  .result-summary {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin: 2rem 0;
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+
+      &.success {
+        color: #27ae60;
+      }
+
+      &.error {
+        color: #e74c3c;
+      }
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .errors-list {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+
+    h4 {
+      color: #856404;
+      margin: 0 0 0.5rem 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: #856404;
+
+      li {
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+}
+
+// Dark mode
+:host-context(.dark) {
+  .students-table {
+    background: #2d3748;
+
+    tbody tr {
+      border-color: #4a5568;
+
+      &:hover {
+        background: #374151;
+      }
+    }
+  }
+
+  .info-box {
+    background: #1e3a5f;
+    border-color: #2563eb;
+
+    code {
+      background: #1a202c;
+      color: #e2e8f0;
+    }
+  }
+
+  .file-upload .file-label {
+    background: #1a202c;
+    border-color: #4a5568;
+
+    &:hover {
+      border-color: var(--primary-color);
+      background: #2d3748;
+    }
+  }
+
+  .errors-list {
+    background: #78350f;
+    border-color: #f59e0b;
+
+    h4, ul {
+      color: #fef3c7;
+    }
+  }
+}

@@ -1,0 +1,41 @@
+@import '../cours/cours.scss';
+
+.classes-container {
+  @extend .cours-container;
+}
+
+.classes-grid {
+  @extend .courses-grid;
+}
+
+.class-card {
+  @extend .course-card;
+
+  .class-header {
+    @extend .course-header;
+  }
+
+  .class-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+
+      i {
+        color: var(--primary-color);
+        width: 20px;
+      }
+    }
+  }
+
+  .class-actions {
+    @extend .course-actions;
+  }
+}

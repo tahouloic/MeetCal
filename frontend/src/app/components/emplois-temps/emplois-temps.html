@@ -1,0 +1,296 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Emplois du temps</h1>
+        <p *ngIf="isAdmin">Gestion des emplois du temps de toutes les classes</p>
+        <p *ngIf="!isAdmin">Vos emplois du temps hebdomadaires</p>
+      </div>
+      <button *ngIf="isAdmin" class="btn-primary" (click)="openGenerateModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Générer emploi du temps
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Sélecteur de semaine -->
+  <div class="week-selector">
+    <label for="week-select">Semaine :</label>
+    <select 
+      id="week-select" 
+      [(ngModel)]="selectedWeekNumber" 
+      (change)="onWeekChange()"
+      class="form-select"
+    >
+      <option *ngFor="let week of availableWeeks" [value]="week.weekNumber">
+        {{ week.label }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Liste des emplois du temps (si plusieurs) -->
+  <div *ngIf="schedules.length > 1" class="schedules-tabs">
+    <button 
+      *ngFor="let schedule of schedules"
+      [class.active]="selectedSchedule?.id === schedule.id"
+      (click)="selectSchedule(schedule)"
+      class="tab-button"
+    >
+      {{ schedule.classGroupName }}
+    </button>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des emplois du temps...</p>
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="!isLoading && schedules.length === 0" class="empty-state">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2"/>
+      <line x1="9" y1="4" x2="9" y2="22" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <h3>Aucun emploi du temps</h3>
+    <p *ngIf="isAdmin">Générez un emploi du temps pour commencer</p>
+    <p *ngIf="!isAdmin">Aucun emploi du temps disponible pour cette semaine</p>
+  </div>
+
+  <!-- Grille d'emploi du temps -->
+  <div *ngIf="!isLoading && selectedSchedule" class="schedule-container">
+    <div class="schedule-header">
+      <h2>{{ selectedSchedule.classGroupName }}</h2>
+      <div class="schedule-info">
+        <span class="badge" [class.badge-generated]="selectedSchedule.isGenerated">
+          {{ selectedSchedule.isGenerated ? 'Généré automatiquement' : 'Créé manuellement' }}
+        </span>
+        <span class="badge" [class.badge-published]="selectedSchedule.isPublished">
+          {{ selectedSchedule.isPublished ? 'Publié' : 'Brouillon' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="schedule-grid">
+      <!-- En-tête des jours -->
+      <div class="grid-header">
+        <div class="time-column">Heure</div>
+        <div *ngFor="let day of days" class="day-column">
+          {{ getDayLabel(day) }}
+        </div>
+      </div>
+
+      <!-- Lignes horaires -->
+      <div *ngFor="let time of timeSlots" class="grid-row">
+        <div class="time-cell">{{ time }}</div>
+        
+        <div *ngFor="let day of days" class="slot-cell" (click)="onCellClick(day, time)">
+          <ng-container *ngIf="getSlotForDayAndTime(day, time) as slot; else emptySlot">
+            <div 
+              class="slot-card"
+              [style.background-color]="getTeacherColor(slot.teacherId)"
+              [class.slot-teacher]="!isAdmin && isTeacherSlot(slot)"
+              [class.slot-manual]="slot.isManuallySet"
+              [class.slot-clickable]="isAdmin"
+            >
+              <div class="slot-course">{{ slot.courseName }}</div>
+              <div class="slot-teacher-name">{{ slot.teacherName }}</div>
+              <div class="slot-room">{{ slot.roomCode }}</div>
+              <div class="slot-time">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</div>
+              <div *ngIf="slot.isManuallySet" class="slot-badge">Modifié</div>
+            </div>
+          </ng-container>
+          
+          <ng-template #emptySlot>
+            <div class="empty-slot" [class.empty-clickable]="isAdmin && time !== '12:00'">
+              <span *ngIf="time === '12:00'">🍽️ Pause</span>
+              <span *ngIf="isAdmin && time !== '12:00'" class="add-icon">+</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="legend" *ngIf="!isAdmin">
+      <div class="legend-item">
+        <div class="legend-color legend-teacher"></div>
+        <span>Vos cours (bordure blanche)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color legend-other"></div>
+        <span>Autres cours</span>
+      </div>
+      <div class="legend-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Chaque couleur représente un enseignant différent</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de génération (Admin) -->
+<div *ngIf="showGenerateModal" class="modal-overlay" (click)="closeGenerateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Générer les emplois du temps</h2>
+      <button class="btn-close" (click)="closeGenerateModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Semaine</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          [value]="'Semaine ' + selectedWeekNumber + ' - ' + selectedYear"
+          readonly
+        />
+      </div>
+
+      <div class="info-box">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <p>
+            <strong>Génération automatique pour toutes les classes</strong>
+          </p>
+          <p>
+            Les emplois du temps seront générés automatiquement pour toutes les classes 
+            en fonction des disponibilités des enseignants et des salles disponibles.
+          </p>
+          <p>
+            <strong>⚠️ Attention:</strong> Les emplois du temps existants pour cette semaine 
+            seront supprimés et régénérés.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeGenerateModal()" [disabled]="isGenerating">
+        Annuler
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="generateSchedule()" 
+        [disabled]="isGenerating"
+      >
+        <span *ngIf="!isGenerating">Générer tous les emplois du temps</span>
+        <span *ngIf="isGenerating">Génération en cours...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'édition/création (Admin) -->
+<div *ngIf="showEditModal && editingSlot" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingSlot.id ? 'Modifier le créneau' : 'Ajouter un créneau' }}</h2>
+      <button class="btn-close" (click)="closeEditModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="edit-day">Jour</label>
+        <input 
+          type="text" 
+          id="edit-day" 
+          [value]="getDayLabel(editingSlot.dayOfWeek)" 
+          class="form-control" 
+          readonly
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="edit-start">Heure de début</label>
+          <input 
+            type="text" 
+            id="edit-start" 
+            [value]="editingSlot.startTime" 
+            class="form-control"
+            readonly
+          />
+        </div>
+        <div class="form-group">
+          <label for="edit-end">Heure de fin</label>
+          <input 
+            type="text" 
+            id="edit-end" 
+            [value]="editingSlot.endTime" 
+            class="form-control"
+            readonly
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-course">Cours *</label>
+        <select id="edit-course" [(ngModel)]="editingSlot.courseId" class="form-control" required>
+          <option value="">-- Sélectionner un cours --</option>
+          <option *ngFor="let course of courses" [value]="course.id">
+            {{ course.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-teacher">Enseignant *</label>
+        <select id="edit-teacher" [(ngModel)]="editingSlot.teacherId" class="form-control" required>
+          <option value="">-- Sélectionner un enseignant --</option>
+          <option *ngFor="let teacher of teachers" [value]="teacher.id">
+            {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-room">Salle *</label>
+        <select id="edit-room" [(ngModel)]="editingSlot.roomId" class="form-control" required>
+          <option value="">-- Sélectionner une salle --</option>
+          <option *ngFor="let room of rooms" [value]="room.id">
+            {{ room.code }} ({{ room.capacity }} places)
+          </option>
+        </select>
+      </div>
+
+      <div class="info-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>Le jour et l'heure ne peuvent pas être modifiés. Seuls le cours, l'enseignant et la salle peuvent être changés.</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditModal()">Annuler</button>
+      <button 
+        class="btn-primary" 
+        (click)="saveTimeSlot()"
+        [disabled]="!editingSlot.courseId || !editingSlot.teacherId || !editingSlot.roomId"
+      >
+        {{ editingSlot.id ? 'Enregistrer' : 'Créer' }}
+      </button>
+    </div>
+  </div>
+</div>

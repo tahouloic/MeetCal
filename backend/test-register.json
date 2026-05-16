@@ -1,0 +1,9 @@
+{
+  "email": "prof.test@iusjc.cm",
+  "password": "Password123!",
+  "firstName": "Jean",
+  "lastName": "Dupont",
+  "phone": "+237612345678",
+  "specialty": "Mathématiques",
+  "schools": ["SJI"]
+}

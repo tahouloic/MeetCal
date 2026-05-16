@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: iusjc-schedule-management
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/iusjc_schedule
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  mail:
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USER:schooldule237@gmail.com}
+    password: ${EMAIL_PASSWORD:uvpj txap vqvj mfyf}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+  compression:
+    enabled: false
+  http2:
+    enabled: false
+  tomcat:
+    connection-timeout: 20000
+    max-http-header-size: 8192
+
+# Configuration JWT
+jwt:
+  secret: ${JWT_SECRET:your_super_secret_jwt_key_change_in_production_min_256_bits_long}
+  expiration: 86400000 # 24 heures en millisecondes (1440 minutes)
+  refresh-expiration: 604800000 # 7 jours en millisecondes
+
+# Configuration Cloudinary
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:dfrih870v}
+  api-key: ${CLOUDINARY_API_KEY:548975784295799}
+  api-secret: ${CLOUDINARY_API_SECRET:NC9aYFrzBEaoDNiNQYzXJeZ98WM}
+
+# Configuration Email
+email:
+  from: ${EMAIL_FROM:IUSJC Schedule <noreply@iusjc.cm>}
+
+# Configuration 2FA
+two-factor:
+  code-expiry-minutes: ${2FA_CODE_EXPIRY_MINUTES:10}
+  max-attempts: ${MAX_2FA_ATTEMPTS:3}
+
+# Configuration Sécurité
+security:
+  bcrypt-rounds: ${BCRYPT_ROUNDS:12}
+  max-login-attempts: ${MAX_LOGIN_ATTEMPTS:3}
+  lockout-time-minutes: ${LOCKOUT_TIME_MINUTES:30}
+
+# Configuration Admin par défaut
+admin:
+  email: ${DEFAULT_ADMIN_EMAIL:admin@iusjc.cm}
+  password: ${DEFAULT_ADMIN_PASSWORD:Admin123!@#}
+  first-name: ${DEFAULT_ADMIN_FIRSTNAME:Super}
+  last-name: ${DEFAULT_ADMIN_LASTNAME:Admin}
+
+# Configuration CORS
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+logging:
+  level:
+    cm.iusjc: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG

@@ -1,0 +1,287 @@
+<div class="etudiants-container">
+  <div class="header">
+    <h1>Gestion des Étudiants</h1>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="openImportModal()">
+        <i class="fas fa-file-import"></i> Importer CSV
+      </button>
+      <button class="btn-primary" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Nouvel Étudiant
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading && students.length === 0">
+    <i class="fas fa-spinner fa-spin"></i> Chargement...
+  </div>
+
+  <!-- Liste des étudiants -->
+  <div class="students-table" *ngIf="!loading || students.length > 0">
+    <table *ngIf="students.length > 0">
+      <thead>
+        <tr>
+          <th>Matricule</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Sexe</th>
+          <th>Date de naissance</th>
+          <th>Classe</th>
+          <th>École</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td><span class="matricule">{{ student.matricule }}</span></td>
+          <td>{{ student.lastName }}</td>
+          <td>{{ student.firstName }}</td>
+          <td>{{ getGenderLabel(student.gender) }}</td>
+          <td>{{ student.dateOfBirth | date:'dd/MM/yyyy' }}</td>
+          <td>{{ student.classGroup.name }} - {{ student.classGroup.level }}{{ student.classGroup.language !== 'NONE' ? ' - ' + getLanguageLabel(student.classGroup.language) : '' }}</td>
+          <td><span class="school-badge">{{ student.school }}</span></td>
+          <td>
+            <div class="actions">
+              <button class="btn-edit" (click)="openEditModal(student)" title="Modifier">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-delete" (click)="deleteStudent(student)" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty-state" *ngIf="students.length === 0 && !loading">
+      <i class="fas fa-user-graduate"></i>
+      <p>Aucun étudiant enregistré</p>
+      <div class="empty-actions">
+        <button class="btn-primary" (click)="openCreateModal()">Ajouter un étudiant</button>
+        <button class="btn-secondary" (click)="openImportModal()">Importer depuis CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Création/Modification -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Modifier l\'étudiant' : 'Nouvel étudiant' }}</h2>
+        <button class="btn-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+        <div class="alert alert-success" *ngIf="successMessage">
+          {{ successMessage }}
+        </div>
+
+        <form (ngSubmit)="saveStudent()">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">Prénom *</label>
+              <input
+                type="text"
+                id="firstName"
+                [(ngModel)]="studentForm.firstName"
+                name="firstName"
+                placeholder="Prénoms"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Nom *</label>
+              <input
+                type="text"
+                id="lastName"
+                [(ngModel)]="studentForm.lastName"
+                name="lastName"
+                placeholder="Nom"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gender">Sexe *</label>
+              <select
+                id="gender"
+                [(ngModel)]="studentForm.gender"
+                name="gender"
+                required
+              >
+                <option *ngFor="let gender of genders" [value]="gender.value">
+                  {{ gender.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="dateOfBirth">Date de naissance *</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                [(ngModel)]="studentForm.dateOfBirth"
+                name="dateOfBirth"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="classGroup">Classe *</label>
+              <select
+                id="classGroup"
+                [(ngModel)]="studentForm.classGroupId"
+                name="classGroupId"
+                required
+              >
+                <option value="">Sélectionner une classe</option>
+                <option *ngFor="let classGroup of classGroups" [value]="classGroup.id">
+                  {{ classGroup.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="school">École *</label>
+              <select
+                id="school"
+                [(ngModel)]="studentForm.school"
+                name="school"
+                required
+              >
+                <option *ngFor="let school of schools" [value]="school.value">
+                  {{ school.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <small>Le matricule sera généré automatiquement</small>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+              <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+              {{ loading ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Import CSV -->
+  <div class="modal-overlay" *ngIf="showImportModal" (click)="closeImportModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Importer des étudiants depuis CSV</h2>
+        <button class="btn-close" (click)="closeImportModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+        <div class="alert alert-success" *ngIf="successMessage">
+          {{ successMessage }}
+        </div>
+
+        <div class="import-section" *ngIf="!importResult">
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <div>
+              <p><strong>Format du fichier CSV:</strong></p>
+              <code>firstName,lastName,gender,dateOfBirth,classCode</code>
+              <p class="mt-2">
+                <strong>Exemple:</strong><br>
+                Jean,Dupont,MALE,2000-05-15,CLS-SJI-4-FR-001
+              </p>
+            </div>
+          </div>
+
+          <button class="btn-link" (click)="downloadCsvTemplate()">
+            <i class="fas fa-download"></i> Télécharger le modèle CSV
+          </button>
+
+          <div class="file-upload">
+            <input
+              type="file"
+              id="csvFile"
+              accept=".csv"
+              (change)="onFileSelected($event)"
+            />
+            <label for="csvFile" class="file-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span *ngIf="!selectedFile">Choisir un fichier CSV</span>
+              <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeImportModal()">
+              Annuler
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              (click)="importCsv()"
+              [disabled]="!selectedFile || loading"
+            >
+              <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+              {{ loading ? 'Import en cours...' : 'Importer' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="import-result" *ngIf="importResult">
+          <div class="result-summary">
+            <div class="result-item success">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ importResult.successCount }} succès</span>
+            </div>
+            <div class="result-item error" *ngIf="importResult.errorCount > 0">
+              <i class="fas fa-times-circle"></i>
+              <span>{{ importResult.errorCount }} erreurs</span>
+            </div>
+          </div>
+
+          <div class="errors-list" *ngIf="importResult.errors && importResult.errors.length > 0">
+            <h4>Erreurs détectées:</h4>
+            <ul>
+              <li *ngFor="let error of importResult.errors">{{ error }}</li>
+            </ul>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-primary" (click)="closeImportModal()">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

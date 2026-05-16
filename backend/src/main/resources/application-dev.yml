@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/iusjc_schedule
+    username: postgres
+    password: 4096
+  
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: schooldule237@gmail.com
+    password: vcgu nkgz rmru zmbx
+
+# Cloudinary (mêmes clés que Node.js)
+cloudinary:
+  cloud-name: dfrih870v
+  api-key: 548975784295799
+  api-secret: NC9aYFrzBEaoDNiNQYzXJeZ98WM
+
+# Email Configuration
+email:
+  from: IUSJC Schedule <noreply@iusjc.cm>
+
+# Admin par défaut
+admin:
+  email: admin@iusjc.cm
+  password: Admin123!@#
+  first-name: Super
+  last-name: Admin
+
+logging:
+  level:
+    cm.iusjc: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.mail: DEBUG
+    org.springframework.mail.javamail: DEBUG

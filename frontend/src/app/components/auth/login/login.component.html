@@ -1,0 +1,158 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo et titre -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <div class="plus-vertical"></div>
+          <div class="plus-horizontal"></div>
+        </div>
+      </div>
+      <h1 class="title">MeetCal login</h1>
+      <p class="subtitle">Connectez-vous à votre espace professionnel</p>
+    </div>
+
+    <!-- Formulaire de connexion -->
+    <div *ngIf="!requiresVerification" class="form-section">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <!-- Email -->
+        <div class="input-group">
+          <label for="email" class="label">Email</label>
+          <div class="input-container">
+            <span class="icon"></span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="Votre adresse email"
+              class="input"
+              [class.error]="email?.invalid && email?.touched"
+            />
+          </div>
+          <div *ngIf="email?.invalid && email?.touched" class="error-message">
+            <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+            <span *ngIf="email?.errors?.['email']">Format d'email invalide</span>
+          </div>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="input-group">
+          <label for="password" class="label">Mot de passe</label>
+          <div class="input-container">
+            <span class="icon"></span>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Votre mot de passe"
+              class="input"
+              [class.error]="password?.invalid && password?.touched"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+            >
+              <span>{{ showPassword ? '🙈' : '👁' }}</span>
+            </button>
+          </div>
+          <div *ngIf="password?.invalid && password?.touched" class="error-message">
+            <span *ngIf="password?.errors?.['required']">Le mot de passe est requis</span>
+            <span *ngIf="password?.errors?.['minlength']">Minimum 8 caractères</span>
+          </div>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Bouton de connexion -->
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading || loginForm.invalid"
+        >
+          <span *ngIf="isLoading" class="spinner"></span>
+          <span>{{ isLoading ? 'Connexion...' : 'Se connecter' }}</span>
+        </button>
+
+        <!-- Lien vers l'inscription -->
+        <div class="footer-link">
+          <p>Vous êtes enseignant ? <a routerLink="/register" class="link">Créer un compte</a></p>
+        </div>
+      </form>
+    </div>
+
+    <!-- Formulaire de vérification 2FA -->
+    <div *ngIf="requiresVerification" class="form-section">
+      <div class="verification-header">
+        <span class="verification-icon">🛡️</span>
+        <h2>Vérification en deux étapes</h2>
+        <p>Entrez le code de vérification envoyé à votre email</p>
+      </div>
+
+      <form [formGroup]="twoFactorForm" (ngSubmit)="onVerifyTwoFactor()">
+        <!-- Code de vérification -->
+        <div class="input-group">
+          <label for="code" class="label">Code de vérification</label>
+          <div class="input-container">
+            <span class="icon">🔑</span>
+            <input
+              id="code"
+              type="text"
+              formControlName="code"
+              placeholder="1234"
+              class="input code-input"
+              maxlength="4"
+              [class.error]="code?.invalid && code?.touched"
+            />
+          </div>
+          <div *ngIf="code?.invalid && code?.touched" class="error-message">
+            <span *ngIf="code?.errors?.['required']">Le code est requis</span>
+            <span *ngIf="code?.errors?.['pattern']">Code à 4 chiffres requis</span>
+          </div>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Boutons -->
+        <div class="button-group">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isLoading || twoFactorForm.invalid"
+          >
+            <span *ngIf="isLoading" class="spinner"></span>
+            <span>{{ isLoading ? 'Vérification...' : 'Vérifier' }}</span>
+          </button>
+          
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onResendCode()"
+            [disabled]="isLoading"
+          >
+            Renvoyer le code
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-link"
+          (click)="onBackToLogin()"
+        >
+          ← Retour à la connexion
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    
+  </div>
+</div>

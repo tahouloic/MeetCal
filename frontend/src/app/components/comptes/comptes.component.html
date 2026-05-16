@@ -1,0 +1,126 @@
+<div class="comptes-container">
+  <div class="page-header">
+    <h1>Gestion des Comptes</h1>
+    <p class="subtitle">Gérez tous les comptes utilisateurs de la plateforme</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (keyup.enter)="onSearch()"
+        placeholder="Rechercher par email, nom ou prénom..."
+        class="search-input"
+      />
+      <button (click)="onSearch()" class="btn-search">
+        <i class="fas fa-search"></i> Rechercher
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des comptes...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button (click)="loadUsers()" class="btn-retry">Réessayer</button>
+  </div>
+
+  <!-- Users Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Inscription</th>
+          <th>Dernière connexion</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>
+            <div class="user-info">
+              <div class="user-avatar">
+                {{ getFullName(user).charAt(0).toUpperCase() }}
+              </div>
+              <span class="user-name">{{ getFullName(user) }}</span>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone || 'N/A' }}</td>
+          <td>
+            <span class="role-badge">{{ getRoleLabel(user.role) }}</span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(user.status)">
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+          <td>{{ formatDate(user.lastConnection) }}</td>
+          <td>
+            <div class="action-buttons">
+              <button 
+                *ngIf="user.status !== 'BLOCKED' && user.role !== 'ADMIN'"
+                (click)="blockUser(user.id)"
+                class="btn-action btn-block"
+                title="Bloquer"
+              >
+                <i class="fas fa-ban"></i>
+              </button>
+              <button 
+                *ngIf="user.status === 'BLOCKED'"
+                (click)="unblockUser(user.id)"
+                class="btn-action btn-unblock"
+                title="Débloquer"
+              >
+                <i class="fas fa-check-circle"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="users.length === 0" class="empty-state">
+      <i class="fas fa-users"></i>
+      <p>Aucun utilisateur trouvé</p>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination">
+      <button 
+        (click)="onPageChange(currentPage - 1)" 
+        [disabled]="currentPage === 0"
+        class="btn-page"
+      >
+        <i class="fas fa-chevron-left"></i> Précédent
+      </button>
+      
+      <span class="page-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} utilisateurs)
+      </span>
+      
+      <button 
+        (click)="onPageChange(currentPage + 1)" 
+        [disabled]="currentPage >= totalPages - 1"
+        class="btn-page"
+      >
+        Suivant <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

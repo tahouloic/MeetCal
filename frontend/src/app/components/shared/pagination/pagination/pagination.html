@@ -1,0 +1,61 @@
+<div class="pagination-container">
+    <!-- Info affichage -->
+    <div class="pagination-info">
+        <span>{{ displayInfo }}</span>
+    </div>
+
+    <!-- Contrôles de pagination -->
+    <div class="pagination-controls">
+        <!-- Première page -->
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" title="Première page">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 17L13 12L18 7M11 17L6 12L11 7" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Page précédente -->
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)"
+            title="Page précédente">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Numéros de pages -->
+        <button *ngFor="let page of pageNumbers" class="pagination-btn page-number"
+            [class.active]="page === currentPage" [class.dots]="page === '...'" [disabled]="page === '...'"
+            (click)="page !== '...' && goToPage(+page)">
+            {{ page }}
+        </button>
+
+        <!-- Page suivante -->
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)"
+            title="Page suivante">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Dernière page -->
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)"
+            title="Dernière page">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M6 17L11 12L6 7M13 17L18 12L13 7" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Sélecteur taille de page -->
+    <div class="page-size-selector">
+        <label>Éléments par page:</label>
+        <select [value]="pageSize" (change)="onPageSizeChange($any($event.target).value)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+</div>

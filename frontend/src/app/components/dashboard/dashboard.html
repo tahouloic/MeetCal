@@ -1,0 +1,198 @@
+<div class="dashboard">
+    <!-- En-tête du dashboard -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1>Bienvenue</h1>
+                <p class="subtitle">Vue d'ensemble de la plateforme MeetCal</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Utilisateurs Récents (Admin uniquement) -->
+    <div class="recent-users-section" *ngIf="isAdmin">
+        <div class="section-header">
+            <h2>Dernières Inscriptions</h2>
+            <a routerLink="/comptes" class="view-all-link">Voir tous les comptes →</a>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoadingUsers" class="loading-state">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+
+        <!-- Users List -->
+        <div *ngIf="!isLoadingUsers && recentUsers.length > 0" class="users-grid">
+            <div *ngFor="let user of recentUsers" class="user-card">
+                <div class="user-avatar">
+                    {{ getUserFullName(user).charAt(0).toUpperCase() }}
+                </div>
+                <div class="user-info">
+                    <h3 class="user-name">{{ getUserFullName(user) }}</h3>
+                    <p class="user-email">{{ user.email }}</p>
+                    <div class="user-meta">
+                        <span class="user-role">{{ getRoleLabel(user.role) }}</span>
+                        <span class="user-status" [class.status-active]="user.status === 'ACTIVE'" 
+                              [class.status-pending]="user.status === 'PENDING'"
+                              [class.status-blocked]="user.status === 'BLOCKED'">
+                          {{ getUserStatusLabel(user.status) }}
+                        </span>
+                    </div>
+                    <p class="user-date">Inscrit le {{ formatUserDate(user.createdAt) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoadingUsers && recentUsers.length === 0" class="empty-state">
+            <p>Aucune inscription récente</p>
+        </div>
+    </div>
+
+    <!-- Section principale -->
+    <div class="main-section">
+        <!-- Message d'erreur global -->
+        <div class="error-message" *ngIf="hasError">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>{{ errorMessage }}</p>
+            <button class="retry-btn" (click)="loadDashboardData()">Réessayer</button>
+        </div>
+
+        <!-- Demandes reçues récentes -->
+        <div class="requests-section" *ngIf="!isLoadingRequests && recentRequests.length > 0">
+            <div class="section-header">
+                <h2>Dernières demandes reçues</h2>
+                <a routerLink="/reservations" [queryParams]="{view: 'received-requests'}" class="view-all-link">
+                    Voir tout
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="requests-grid">
+                <div *ngFor="let request of recentRequests" class="request-card">
+                    <div class="request-header">
+                        <div class="requester-info">
+                            <div class="requester-avatar">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                            <div class="requester-details">
+                                <h3>{{ request.requestorName }}</h3>
+                                <p>{{ request.requestorEmail }}</p>
+                            </div>
+                        </div>
+                        <span class="status-badge" [class]="getStatusClass(request.status)">
+                            {{ getStatusLabel(request.status) }}
+                        </span>
+                    </div>
+                    <div class="request-body">
+                        <div class="request-date">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <path d="M16 2v4M8 2v4M3 10h18"/>
+                            </svg>
+                            <span>{{ formatDate(request.slotTime) }} à {{ formatTime(request.slotTime) }}</span>
+                        </div>
+                        <p *ngIf="request.message" class="request-message">{{ request.message }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading state pour demandes -->
+        <div class="requests-section" *ngIf="isLoadingRequests">
+            <div class="section-header">
+                <h2>Dernières demandes reçues</h2>
+            </div>
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Chargement des demandes...</p>
+            </div>
+        </div>
+
+        <!-- Rendez-vous à venir -->
+        <div class="appointments-section" *ngIf="!isLoadingAppointments && upcomingAppointments.length > 0">
+            <div class="section-header">
+                <h2>Rendez-vous à venir</h2>
+                <a routerLink="/rendez-vous" class="view-all-link">
+                    Voir tout
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="appointments-grid">
+                <div *ngFor="let appointment of upcomingAppointments" class="appointment-card">
+                    <div class="appointment-type-badge" [class.sent]="appointment.isSent" [class.received]="!appointment.isSent">
+                        {{ appointment.isSent ? 'Envoyé' : 'Reçu' }}
+                    </div>
+                    <div class="appointment-header">
+                        <div class="date-section">
+                            <div class="day">{{ getDay(appointment.slotTime) }}</div>
+                            <div class="month-year">{{ getMonthYear(appointment.slotTime) }}</div>
+                        </div>
+                        <div class="time-section">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            <span>{{ formatTime(appointment.slotTime) }}</span>
+                        </div>
+                    </div>
+                    <div class="appointment-body">
+                        <div class="participant-info">
+                            <div class="participant-avatar">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                            <div class="participant-details">
+                                <h3>{{ appointment.isSent ? appointment.recipientName : appointment.requestorName }}</h3>
+                                <p>{{ appointment.isSent ? appointment.recipientEmail : appointment.requestorEmail }}</p>
+                            </div>
+                        </div>
+                        <div class="countdown">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            <span>{{ getTimeUntilAppointment(appointment.slotTime) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading state pour rendez-vous -->
+        <div class="appointments-section" *ngIf="isLoadingAppointments">
+            <div class="section-header">
+                <h2>Rendez-vous à venir</h2>
+            </div>
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Chargement des rendez-vous...</p>
+            </div>
+        </div>
+
+        <!-- État vide si aucune donnée -->
+        <div class="empty-state" *ngIf="!isLoadingRequests && !isLoadingAppointments && recentRequests.length === 0 && upcomingAppointments.length === 0">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            <h3>Aucune activité récente</h3>
+            <p>Les demandes et rendez-vous apparaîtront ici</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,141 @@
+<div class="salles-container">
+  <div class="header">
+    <h1>Gestion des Salles</h1>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Nouvelle Salle
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading && rooms.length === 0">
+    <i class="fas fa-spinner fa-spin"></i> Chargement...
+  </div>
+
+  <!-- Liste des salles -->
+  <div class="rooms-grid" *ngIf="!loading || rooms.length > 0">
+    <div class="room-card" *ngFor="let room of rooms">
+      <div class="room-header">
+        <div class="room-code">{{ room.code }}</div>
+        <div class="room-capacity">
+          <i class="fas fa-users"></i>
+          {{ room.capacity }} places
+        </div>
+      </div>
+      <div class="room-actions">
+        <button class="btn-edit" (click)="openEditModal(room)" title="Modifier">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-delete" (click)="deleteRoom(room)" title="Supprimer">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="rooms.length === 0 && !loading">
+      <i class="fas fa-door-open"></i>
+      <p>Aucune salle disponible</p>
+      <button class="btn-primary" (click)="openCreateModal()">Créer la première salle</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Modifier la salle' : 'Nouvelle salle' }}</h2>
+        <button class="btn-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+        <div class="alert alert-success" *ngIf="successMessage">
+          {{ successMessage }}
+        </div>
+
+        <form (ngSubmit)="saveRoom()">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="building">Bâtiment *</label>
+              <select
+                id="building"
+                [(ngModel)]="roomForm.building"
+                name="building"
+                required
+              >
+                <option value="">Sélectionner</option>
+                <option *ngFor="let b of buildings" [value]="b">{{ b }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="floor">Étage *</label>
+              <select
+                id="floor"
+                [(ngModel)]="roomForm.floor"
+                name="floor"
+                required
+              >
+                <option *ngFor="let f of floors" [value]="f.value">{{ f.label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="number">Numéro *</label>
+              <input
+                type="text"
+                id="number"
+                [(ngModel)]="roomForm.number"
+                name="number"
+                placeholder="Ex: 01, 02, 03..."
+                required
+              />
+              <small>Le numéro de la salle (ex: 01, 02, 103...)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="capacity">Capacité *</label>
+              <input
+                type="number"
+                id="capacity"
+                [(ngModel)]="roomForm.capacity"
+                name="capacity"
+                placeholder="Ex: 30"
+                min="1"
+                required
+              />
+              <small>Nombre de places</small>
+            </div>
+          </div>
+
+          <div class="info-box" *ngIf="roomForm.building && roomForm.number">
+            <strong>Code généré:</strong> {{ roomForm.building }}{{ roomForm.floor }}{{ roomForm.number }}
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+              <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+              {{ loading ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

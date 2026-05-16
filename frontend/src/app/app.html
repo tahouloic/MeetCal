@@ -1,0 +1,25 @@
+<div class="app-container">
+  <!-- Layout avec sidebar et header (seulement si connecté) -->
+  <ng-container *ngIf="isAuthenticated(); else loginLayout">
+    <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+      <!-- Header -->
+      <app-header></app-header>
+      
+      <!-- Contenu des pages -->
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </ng-container>
+
+  <!-- Layout simple pour la page de connexion -->
+  <ng-template #loginLayout>
+    <div class="login-layout">
+      <router-outlet></router-outlet>
+    </div>
+  </ng-template>
+</div>

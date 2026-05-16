@@ -1,0 +1,9 @@
+@import '../ecoles/ecoles.scss';
+
+.form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}

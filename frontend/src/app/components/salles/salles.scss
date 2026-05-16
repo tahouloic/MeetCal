@@ -1,0 +1,73 @@
+@import '../cours/cours.scss';
+
+.salles-container {
+  @extend .cours-container;
+}
+
+.rooms-grid {
+  @extend .courses-grid;
+}
+
+.room-card {
+  @extend .course-card;
+
+  .room-header {
+    margin-bottom: 1rem;
+
+    .room-code {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .room-capacity {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 1rem;
+
+      i {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  .room-actions {
+    @extend .course-actions;
+  }
+}
+
+small {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-box {
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+
+  strong {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+  }
+}

@@ -1,0 +1,558 @@
+<div class="demandes-container">
+  <!-- Header avec navigation -->
+  <div class="header">
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+      Demandes de Rendez-vous
+    </h1>
+    
+    <div class="header-actions">
+      <button 
+        class="btn-tab" 
+        [class.active]="currentView === 'search'"
+        (click)="showSearchView()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Rechercher
+      </button>
+      <button 
+        class="btn-tab" 
+        [class.active]="currentView === 'my-requests'"
+        (click)="showMyRequestsView()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Mes Demandes
+      </button>
+      <button 
+        class="btn-tab" 
+        [class.active]="currentView === 'received-requests'"
+        (click)="showReceivedRequestsView()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        Demandes Reçues
+      </button>
+    </div>
+  </div>
+
+  <!-- Message de notification -->
+  <div *ngIf="message" class="alert" [ngClass]="'alert-' + messageType">
+    {{ message }}
+  </div>
+
+  <!-- ========== VUE RECHERCHE ========== -->
+  <div *ngIf="currentView === 'search'" class="search-view">
+    <!-- Barre de recherche -->
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        placeholder="Rechercher un profil par nom, prénom ou email..."
+        class="search-input"
+      />
+      <div *ngIf="isSearching" class="search-spinner"></div>
+    </div>
+
+    <!-- Résultats de recherche -->
+    <div *ngIf="searchQuery.length >= 2" class="search-results">
+      <div *ngIf="searchResults.length === 0 && !isSearching" class="empty-results">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <p>Aucun profil trouvé</p>
+      </div>
+
+      <div class="results-grid">
+        <div 
+          *ngFor="let profile of searchResults" 
+          class="profile-card"
+          (click)="viewProfile(profile)">
+          <div class="profile-avatar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="profile-info">
+            <h3>{{ getFullName(profile) }}</h3>
+            <p class="profile-email">{{ profile.email }}</p>
+            <span class="profile-type">{{ getAccountTypeLabel(profile.accountType) }}</span>
+          </div>
+          <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message initial -->
+    <div *ngIf="searchQuery.length < 2" class="search-placeholder">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <p>Recherchez un profil pour consulter ses disponibilités</p>
+      <small>Saisissez au moins 2 caractères</small>
+    </div>
+  </div>
+
+  <!-- ========== VUE PROFIL ========== -->
+  <div *ngIf="currentView === 'profile' && selectedProfile" class="profile-view">
+    <!-- Bouton retour -->
+    <button class="btn-back" (click)="showSearchView()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Retour à la recherche
+    </button>
+
+    <!-- Informations du profil -->
+    <div class="profile-details">
+      <div class="profile-header">
+        <div class="profile-avatar-large">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="profile-header-info">
+          <h2>{{ getFullName(selectedProfile) }}</h2>
+          <p>{{ selectedProfile.email }}</p>
+          <span class="profile-type-badge">{{ getAccountTypeLabel(selectedProfile.accountType) }}</span>
+        </div>
+      </div>
+
+      <!-- Disponibilités -->
+      <div class="availabilities-section">
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Disponibilités (7 prochains jours)
+        </h3>
+
+        <div *ngIf="isLoadingProfile" class="loading-availabilities">
+          <div class="spinner"></div>
+          <p>Chargement des disponibilités...</p>
+        </div>
+
+        <div *ngIf="!isLoadingProfile && profileAvailabilities.length === 0" class="no-availabilities">
+          <p>Aucune disponibilité pour les 7 prochains jours</p>
+        </div>
+
+        <div *ngIf="!isLoadingProfile && profileAvailabilities.length > 0" class="availabilities-list">
+          <div *ngFor="let day of getAvailabilitiesByDay() | keyvalue" class="day-group">
+            <h4>{{ getDayLabel(day.key) }}</h4>
+            <div class="slots-grid">
+              <div 
+                *ngFor="let slot of day.value" 
+                class="slot-badge"
+                [class.unavailable]="!slot.isAvailable">
+                {{ slot.startTime }} - {{ slot.endTime }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton demander rendez-vous -->
+      <button 
+        *ngIf="!isLoadingProfile && profileAvailabilities.length > 0"
+        class="btn-request" 
+        (click)="openRequestForm()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Demander un rendez-vous
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== VUE MES DEMANDES ========== -->
+  <div *ngIf="currentView === 'my-requests'" class="my-requests-view">
+    <!-- Filtre par statut -->
+    <div class="filters">
+      <label for="statusFilter">Filtrer par statut:</label>
+      <select
+        id="statusFilter"
+        [(ngModel)]="selectedStatus"
+        (ngModelChange)="onStatusFilterChange()">
+        <option value="ALL">Toutes</option>
+        <option [value]="AppointmentStatus.PENDING">En attente</option>
+        <option [value]="AppointmentStatus.ACCEPTED">Acceptées</option>
+        <option [value]="AppointmentStatus.REJECTED">Rejetées</option>
+        <option [value]="AppointmentStatus.EXPIRED">Expirées</option>
+      </select>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoadingRequests" class="loading">
+      <div class="spinner"></div>
+      <p>Chargement des demandes...</p>
+    </div>
+
+    <!-- Liste des demandes -->
+    <div *ngIf="!isLoadingRequests" class="requests-list">
+      <div *ngIf="myRequests.length === 0" class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <p>Aucune demande</p>
+      </div>
+
+      <div *ngFor="let request of myRequests" class="request-card">
+        <div class="card-header">
+          <div class="card-title">
+            <h3>Rendez-vous avec {{ request.recipientName || 'Utilisateur' }}</h3>
+            <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+              {{ getStatusIcon(request.status) }} {{ getStatusLabel(request.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Date et heure -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>
+              <strong>Date:</strong> {{ formatDate(request.slotTime) }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>
+              <strong>Heure:</strong> {{ formatTime(request.slotTime) }}
+            </span>
+          </div>
+
+          <!-- Destinataire -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>
+              <strong>Avec:</strong> {{ request.recipientEmail || 'N/A' }}
+            </span>
+          </div>
+
+          <!-- Message -->
+          <div *ngIf="request.message" class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>
+              <strong>Message:</strong> {{ request.message }}
+            </span>
+          </div>
+
+          <!-- Date de création -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>
+              <strong>Envoyée le:</strong> {{ formatDate(request.createdAt) }}
+            </span>
+          </div>
+
+          <!-- Expiration (si en attente) -->
+          <div *ngIf="request.status === AppointmentStatus.PENDING" class="expiration-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Expire {{ getTimeUntilExpiration(request.expiresAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VUE DEMANDES REÇUES ========== -->
+  <div *ngIf="currentView === 'received-requests'" class="received-requests-view">
+    <!-- Filtre par statut -->
+    <div class="filters">
+      <label for="receivedStatusFilter">Filtrer par statut:</label>
+      <select
+        id="receivedStatusFilter"
+        [(ngModel)]="selectedReceivedStatus"
+        (ngModelChange)="onReceivedStatusFilterChange()">
+        <option value="ALL">Toutes</option>
+        <option [value]="AppointmentStatus.PENDING">En attente</option>
+        <option [value]="AppointmentStatus.ACCEPTED">Acceptées</option>
+        <option [value]="AppointmentStatus.REJECTED">Rejetées</option>
+        <option [value]="AppointmentStatus.EXPIRED">Expirées</option>
+      </select>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoadingReceivedRequests" class="loading">
+      <div class="spinner"></div>
+      <p>Chargement des demandes...</p>
+    </div>
+
+    <!-- Liste des demandes reçues -->
+    <div *ngIf="!isLoadingReceivedRequests" class="requests-list">
+      <div *ngIf="receivedRequests.length === 0" class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <p>Aucune demande reçue</p>
+      </div>
+
+      <div *ngFor="let request of receivedRequests" class="request-card">
+        <div class="card-header">
+          <div class="card-title">
+            <h3>Demande de {{ request.requestorName || 'Utilisateur' }}</h3>
+            <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+              {{ getStatusIcon(request.status) }} {{ getStatusLabel(request.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Date et heure -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>
+              <strong>Date:</strong> {{ formatDate(request.slotTime) }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>
+              <strong>Heure:</strong> {{ formatTime(request.slotTime) }}
+            </span>
+          </div>
+
+          <!-- Demandeur -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>
+              <strong>De:</strong> {{ request.requestorEmail || 'N/A' }}
+            </span>
+          </div>
+
+          <!-- Message -->
+          <div *ngIf="request.message" class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>
+              <strong>Message:</strong> {{ request.message }}
+            </span>
+          </div>
+
+          <!-- Date de création -->
+          <div class="info-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>
+              <strong>Reçue le:</strong> {{ formatDate(request.createdAt) }}
+            </span>
+          </div>
+
+          <!-- Expiration (si en attente) -->
+          <div *ngIf="request.status === AppointmentStatus.PENDING" class="expiration-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Expire {{ getTimeUntilExpiration(request.expiresAt) }}</span>
+          </div>
+
+          <!-- Actions (si en attente) -->
+          <div *ngIf="request.status === AppointmentStatus.PENDING" class="request-actions">
+            <button class="btn-accept" (click)="openAcceptModal(request)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Accepter
+            </button>
+            <button class="btn-reject" (click)="openRejectModal(request)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Rejeter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODAL ACCEPTER/REJETER ========== -->
+  <div *ngIf="showResponseModal" class="modal-overlay" (click)="closeResponseModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ responseAction === 'ACCEPT' ? 'Accepter' : 'Rejeter' }} la demande</h2>
+        <button class="btn-close" (click)="closeResponseModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-subtitle">
+          Demande de <strong>{{ selectedRequestForResponse?.requestorName }}</strong>
+        </p>
+        <p class="modal-subtitle" *ngIf="selectedRequestForResponse?.slotTime">
+          Date: <strong>{{ formatDate(selectedRequestForResponse!.slotTime) }}</strong> à 
+          <strong>{{ formatTime(selectedRequestForResponse!.slotTime) }}</strong>
+        </p>
+
+        <!-- Message optionnel -->
+        <div class="form-group">
+          <label for="responseMessage">
+            Message {{ responseAction === 'REJECT' ? '(optionnel)' : '(optionnel)' }}
+          </label>
+          <textarea
+            id="responseMessage"
+            [(ngModel)]="responseMessage"
+            rows="3"
+            [placeholder]="responseAction === 'ACCEPT' ? 'Ajoutez un message de confirmation...' : 'Expliquez la raison du rejet...'"
+            maxlength="500"
+          ></textarea>
+          <small>{{ responseMessage?.length || 0 }}/500 caractères</small>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeResponseModal()">
+          Annuler
+        </button>
+        <button
+          [class]="responseAction === 'ACCEPT' ? 'btn-accept' : 'btn-reject'"
+          (click)="submitResponse()"
+          [disabled]="isRespondingToRequest">
+          {{ isRespondingToRequest ? 'Envoi...' : (responseAction === 'ACCEPT' ? 'Accepter' : 'Rejeter') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODAL DEMANDE DE RENDEZ-VOUS ========== -->
+  <div *ngIf="showRequestForm" class="modal-overlay" (click)="closeRequestForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Demander un rendez-vous</h2>
+        <button class="btn-close" (click)="closeRequestForm()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-subtitle">Avec: <strong>{{ getFullName(selectedProfile!) }}</strong></p>
+
+        <!-- Sélection de date -->
+        <div class="form-group">
+          <label for="appointmentDate">Date *</label>
+          <input
+            type="date"
+            id="appointmentDate"
+            [(ngModel)]="selectedDate"
+            (ngModelChange)="onDateSelected()"
+            [min]="getMinDate()"
+            [max]="getMaxDate()"
+            required
+          />
+        </div>
+
+        <!-- Sélection de l'heure -->
+        <div class="form-group">
+          <label for="appointmentTime">Heure *</label>
+          <input
+            type="time"
+            id="appointmentTime"
+            [(ngModel)]="selectedTime"
+            (ngModelChange)="onTimeSelected()"
+            required
+          />
+          <small *ngIf="timeValidationMessage" class="validation-message" [class.error]="!isTimeValid">
+            {{ timeValidationMessage }}
+          </small>
+        </div>
+
+        <!-- Message -->
+        <div class="form-group">
+          <label for="requestMessage">Message (optionnel)</label>
+          <textarea
+            id="requestMessage"
+            [(ngModel)]="requestForm.message"
+            rows="3"
+            placeholder="Ajoutez un message pour accompagner votre demande..."
+            maxlength="500"
+          ></textarea>
+          <small>{{ requestForm.message?.length || 0 }}/500 caractères</small>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeRequestForm()">
+          Annuler
+        </button>
+        <button
+          class="btn-submit"
+          (click)="submitRequest()"
+          [disabled]="!selectedDate || !selectedTime || !isTimeValid || isSendingRequest">
+          {{ isSendingRequest ? 'Envoi...' : 'Envoyer la demande' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
