@@ -53,20 +53,20 @@ jobs:
             ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             
             # Créer une sauvegarde avant la mise à jour
-            echo "📦 Création d'une sauvegarde..."
+            echo " Création d'une sauvegarde..."
             bash ~/deployment-scripts/backup-db.sh || true
             
             # Arrêter les services
-            echo "🛑 Arrêt des services..."
+            echo " Arrêt des services..."
             cd ~
             docker-compose down || true
             
             # Supprimer l'ancien code
-            echo "🗑️ Nettoyage de l'ancien code..."
+            echo " Nettoyage de l'ancien code..."
             rm -rf ~/appointment-booking-platform
             
             # Extraire la nouvelle version
-            echo "📂 Extraction de la nouvelle version..."
+            echo " Extraction de la nouvelle version..."
             unzip -q -o ~/deployment.zip -d ~/
             rm ~/deployment.zip
             
@@ -74,26 +74,26 @@ jobs:
             chmod +x ~/deployment-scripts/*.sh
             
             # Reconstruire et redémarrer
-            echo "🔨 Reconstruction des images..."
+            echo " Reconstruction des images..."
             docker-compose build --no-cache
             
-            echo "🚀 Démarrage des services..."
+            echo " Démarrage des services..."
             docker-compose up -d
             
             # Attendre que les services démarrent
-            echo "⏳ Attente du démarrage des services..."
+            echo " Attente du démarrage des services..."
             sleep 30
             
             # Vérifier l'état
-            echo "✅ Vérification de l'état des services..."
+            echo " Vérification de l'état des services..."
             docker-compose ps
             
-            echo "🎉 Déploiement terminé!"
+            echo " Déploiement terminé!"
           EOF
 
       - name: Verify deployment
         run: |
-          echo "🔍 Vérification du déploiement..."
+          echo " Vérification du déploiement..."
           
           # Vérifier que le backend répond
           for i in {1..10}; do
@@ -101,11 +101,11 @@ jobs:
               echo "✅ Backend opérationnel!"
               exit 0
             fi
-            echo "⏳ Tentative $i/10..."
+            echo " Tentative $i/10..."
             sleep 10
           done
           
-          echo "❌ Le backend ne répond pas"
+          echo " Le backend ne répond pas"
           exit 1
 
       - name: Cleanup
